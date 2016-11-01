@@ -18,5 +18,11 @@
 import pickle
 
 enron_data = pickle.load(open("../final_project/final_project_dataset.pkl", "r"))
+b = len(enron_data)
+a = [enron_data[key] for key in enron_data if enron_data[key]['poi'] is True]
+print(len(a))
+
+print(enron_data['SKILLING JEFFREY K'])
+pass
 
 
