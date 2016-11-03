@@ -43,15 +43,33 @@ data_dict = pickle.load( open("../final_project/final_project_dataset.pkl", "r")
 ### there's an outlier--remove it! 
 data_dict.pop("TOTAL", 0)
 
+# max = float('-inf')
+# min = float('inf')
+# for key,value in data_dict.iteritems():
+#     number = value["salary"]
+#     if number is None or number == 0 or str(float(number)).lower() == 'nan':
+#         continue
+#     if number > max:
+#         max  = number
+#     if number < min:
+#         min = number
+#
+#     print(max)
+#     print(min)
+#
+# print(max)
+# print(min)
 
 ### the input features we want to use 
 ### can be any key in the person-level dictionary (salary, director_fees, etc.) 
 feature_1 = "salary"
 feature_2 = "exercised_stock_options"
+feature_3 = "total_payments"
 poi  = "poi"
 features_list = [poi, feature_1, feature_2]
 data = featureFormat(data_dict, features_list )
 poi, finance_features = targetFeatureSplit( data )
+
 
 
 ### in the "clustering with 3 features" part of the mini-project,
@@ -64,7 +82,8 @@ plt.show()
 
 ### cluster here; create predictions of the cluster labels
 ### for the data and store them to a list called pred
-
+from sklearn.cluster import KMeans
+pred = KMeans(n_clusters=2, random_state=170).fit_predict(finance_features)
 
 
 
