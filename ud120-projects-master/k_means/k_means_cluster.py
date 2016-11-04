@@ -43,22 +43,37 @@ data_dict = pickle.load( open("../final_project/final_project_dataset.pkl", "r")
 ### there's an outlier--remove it! 
 data_dict.pop("TOTAL", 0)
 
-# max = float('-inf')
-# min = float('inf')
-# for key,value in data_dict.iteritems():
-#     number = value["salary"]
-#     if number is None or number == 0 or str(float(number)).lower() == 'nan':
-#         continue
-#     if number > max:
-#         max  = number
-#     if number < min:
-#         min = number
-#
-#     print(max)
-#     print(min)
-#
-# print(max)
-# print(min)
+max = float('-inf')
+min = float('inf')
+for key,value in data_dict.iteritems():
+    number = value["salary"]
+    if number is None or number == 0 or str(float(number)).lower() == 'nan':
+        continue
+    if number > max:
+        max  = number
+    if number < min:
+        min = number
+
+
+print(max)
+print(min)
+print((200000.0-min)/(max-min))
+
+max = float('-inf')
+min = float('inf')
+for key,value in data_dict.iteritems():
+    number = value["exercised_stock_options"]
+    if number is None or number == 0 or str(float(number)).lower() == 'nan':
+        continue
+    if number > max:
+        max  = number
+    if number < min:
+        min = number
+
+
+print(max)
+print(min)
+print((1000000.0-min)/(max-min))
 
 ### the input features we want to use 
 ### can be any key in the person-level dictionary (salary, director_fees, etc.) 
