@@ -1,2 +1,8 @@
 .idea/*
 ud120-projects-master/.idea/*
+
+RL/.idea/*
+
+*.pyc
+
+RL/RL1/.idea/*
