@@ -10,6 +10,7 @@ from keras.layers import Input, Dense, Convolution2D, MaxPooling2D, UpSampling2D
 from keras.models import Model
 from IPython.display import SVG
 from keras.utils.visualize_util import model_to_dot
+from keras.callbacks import ModelCheckpoint
 import os
 import random
 import keras
@@ -28,7 +29,6 @@ TEST_DIR = 'cat_dog_test/'
 train_images = [TRAIN_DIR+i for i in os.listdir(TRAIN_DIR)] # use this for full dataset
 train_dogs =   [TRAIN_DIR+i for i in os.listdir(TRAIN_DIR) if 'dog' in i]
 train_cats =   [TRAIN_DIR+i for i in os.listdir(TRAIN_DIR) if 'cat' in i]
-test_images =  [TEST_DIR+i for i in os.listdir(TEST_DIR)]
 
 def readImg(imgFile):
     colorImg = cv2.imread(imgFile, cv2.IMREAD_COLOR)
@@ -58,7 +58,6 @@ def generateDate(imgFiles):
 # slice datasets for memory efficiency on Kaggle Kernels, delete if using full dataset
 train_images = train_dogs[:3000] + train_cats[:3000]
 random.shuffle(train_images)
-test_images =  test_images[:10]
 
 dataX,dataY = generateDate(train_images)
 
@@ -97,18 +96,26 @@ SVG(model_to_dot(autoencoder,show_shapes=True).create(prog='dot', format='svg'))
 tensorBoardPath = '/home/yhfy2006/machineLearningInPython/AutoEncoder/logs'
 
 tb_cb = keras.callbacks.TensorBoard(log_dir=tensorBoardPath, histogram_freq=1)
-cbks = [tb_cb]
+checkpoint = ModelCheckpoint(filepath="/home/yhfy2006/machineLearningInPython/AutoEncoder/logs/weights.hdf5", verbose=1, save_best_only=True)
+
+cbks = [checkpoint]
+
+
 
 autoencoder.fit(dataX, dataY,
-                nb_epoch=1500,
+                nb_epoch=200,
                 batch_size=50,
                 shuffle=True,
-                verbose=0,
+                verbose=1,
+                validation_split=0.3,
                 callbacks=cbks)
 
-autoencoder.save_weights("autoencoder.h5")
+#autoencoder.save_weights("autoencoder.h5")
 
 # In[49]:
+
+test_images =  [TEST_DIR+i for i in os.listdir(TEST_DIR)]
+test_images =  test_images[:10]
 
 testImgRatios = []
 for i,imgFile in enumerate(test_images):
