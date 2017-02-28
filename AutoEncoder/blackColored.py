@@ -103,7 +103,7 @@ cbks = [checkpoint]
 
 
 autoencoder.fit(dataX, dataY,
-                nb_epoch=200,
+                nb_epoch=400,
                 batch_size=50,
                 shuffle=True,
                 verbose=1,
