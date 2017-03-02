@@ -8,7 +8,7 @@ while q learning is more brave because it only cares about maximum behaviour.
 """
 
 from maze_env import Maze
-from RL_brain_dqn import DeepQNetwork
+from RL_brain_dqn_tf import DeepQNetwork
 
 
 def run_maze():
