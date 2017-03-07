@@ -8,15 +8,23 @@ while q learning is more brave because it only cares about maximum behaviour.
 """
 
 from maze_env import Maze
-from RL_brain_dqn_tf import DeepQNetwork
+from RL_brain_dqn import DeepQNetwork
+# import gym
+# env = gym.make('CartPole-v0')
+# env.reset()
+# for _ in range(1000):
+#     env.render()
+#     env.step(env.action_space.sample())
 
 
 def run_maze():
     step = 0
+    gameRun = 0
     for episode in range(300):
         # initial observation
+        gameRun+=1
         observation = env.reset()
-
+        print("Run game:"+str(gameRun))
         while True:
             # fresh env
             env.render()
