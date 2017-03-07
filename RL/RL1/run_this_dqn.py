@@ -9,22 +9,19 @@ while q learning is more brave because it only cares about maximum behaviour.
 
 from maze_env import Maze
 from RL_brain_dqn import DeepQNetwork
-# import gym
-# env = gym.make('CartPole-v0')
-# env.reset()
-# for _ in range(1000):
-#     env.render()
-#     env.step(env.action_space.sample())
+import gym
+
 
 
 def run_maze():
     step = 0
     gameRun = 0
-    for episode in range(300):
+    for episode in range(50000):
         # initial observation
         gameRun+=1
         observation = env.reset()
-        print("Run game:"+str(gameRun))
+        if gameRun%100 == 0:
+            print("Run game:"+str(gameRun))
         while True:
             # fresh env
             env.render()
@@ -33,11 +30,12 @@ def run_maze():
             action = RL.choose_action(observation)
 
             # RL take action and get next observation and reward
-            observation_, reward, done = env.step(action)
+            observation_, reward, done, info = env.step(action)
+            #print(observation_, reward, done,action,info)
 
             RL.store_transition(observation, action, reward, observation_)
 
-            if (step > 200) and (step % 5 == 0):
+            if (step > 400) and (step % 5 == 0):
                 RL.learn()
 
             # swap observation
@@ -56,14 +54,20 @@ def run_maze():
 if __name__ == "__main__":
     # maze game
     env = Maze()
-    RL = DeepQNetwork(env.n_actions, env.n_features,
+
+    env = gym.make('CartPole-v0')
+    env.reset()
+
+
+    RL = DeepQNetwork(2, 4,
                       learning_rate=0.01,
                       reward_decay=0.9,
                       e_greedy=0.9,
-                      replace_target_iter=200,
+                      replace_target_iter=300,
                       memory_size=2000,
                       # output_graph=True
                       )
-    env.after(100, run_maze)
-    env.mainloop()
+    run_maze()
+    #env.after(100, run_maze)
+    #env.mainloop()
     RL.plot_cost()

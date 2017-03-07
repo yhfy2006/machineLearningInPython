@@ -72,8 +72,8 @@ class DeepQNetwork:
 
     def _build_keras_net(self):
         input = Input(shape=(self.n_features,))
-        x = Dense(10,activation='relu',init=self.my_init)(input)
-        output = Dense(self.n_actions)(x)
+        x = Dense(10,activation='relu',init='normal')(input)
+        output = Dense(self.n_actions,init='normal')(x)
         md = Model(input = input, output=output)
         md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
         return md
