@@ -27,10 +27,10 @@ class DeepQNetwork:
             self,
             n_actions,
             n_features,
-            learning_rate=0.01,
+            learning_rate=0.05,
             reward_decay=0.9,
             e_greedy=0.9,
-            replace_target_iter=300,
+            replace_target_iter=500,
             memory_size=500,
             batch_size=32,
             e_greedy_increment=None,
@@ -72,7 +72,7 @@ class DeepQNetwork:
 
     def _build_keras_net(self):
         input = Input(shape=(self.n_features,))
-        x = Dense(10,activation='relu',init='normal')(input)
+        x = Dense(50,activation='relu',init='normal')(input)
         output = Dense(self.n_actions,init='normal')(x)
         md = Model(input = input, output=output)
         md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
@@ -134,7 +134,7 @@ class DeepQNetwork:
         history = self.evaluate_net.fit(self.s,q_target,
                 nb_epoch=1,
                 batch_size=50,
-                shuffle=True,
+                shuffle=False,
                 verbose=0)
 
         self.cost_his.append(history.history['loss'])
