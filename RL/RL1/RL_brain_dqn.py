@@ -73,6 +73,7 @@ class DeepQNetwork:
     def _build_keras_net(self):
         input = Input(shape=(self.n_features,))
         x = Dense(50,activation='relu',init='normal')(input)
+        x = Dense(50,activation='relu',init='normal')(x)
         output = Dense(self.n_actions,init='normal')(x)
         md = Model(input = input, output=output)
         md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
@@ -141,6 +142,7 @@ class DeepQNetwork:
 
         # increasing epsilon
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
+        #print(self.epsilon)
         self.learn_step_counter += 1
 
 

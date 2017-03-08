@@ -20,7 +20,7 @@ def run_maze():
         # initial observation
         gameRun+=1
         observation = env.reset()
-        if gameRun%100 == 0:
+        if gameRun%1 == 0:
             print("Run game:"+str(gameRun))
         while True:
             # fresh env
@@ -33,6 +33,13 @@ def run_maze():
             observation_, reward, done, info = env.step(action)
             if done:
                 reward = -1.0
+
+
+            #compute reward
+            x, x_dot, theta, theta_dot = observation_
+            r1 = (env.env.x_threshold - abs(x))/env.env.x_threshold - 0.8
+            r2 = (env.env.theta_threshold_radians - abs(theta))/env.env.theta_threshold_radians - 0.5
+            reward = r1 + r2
             #print(observation_, reward, done,action,info)
 
             RL.store_transition(observation, action, reward, observation_)
@@ -63,10 +70,11 @@ if __name__ == "__main__":
 
     RL = DeepQNetwork(2, 4,
                       learning_rate=0.03,
-                      reward_decay=0.9,
-                      e_greedy=0.8,
-                      replace_target_iter=500,
+                      reward_decay=0.7,
+                      e_greedy=0.9,
+                      replace_target_iter=200,
                       memory_size=2000,
+                      e_greedy_increment = 0.001
                       # output_graph=True
                       )
     run_maze()
