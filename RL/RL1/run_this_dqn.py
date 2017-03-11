@@ -64,7 +64,7 @@ if __name__ == "__main__":
     # maze game
     env = Maze()
 
-    env = gym.make('CartPole-v0')
+    env = gym.make('DoomDefendLine-v0')
     env.reset()
 
 
