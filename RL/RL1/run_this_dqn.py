@@ -20,7 +20,7 @@ def run_maze():
         # initial observation
         gameRun+=1
         observation = env.reset()
-        if gameRun%100 == 0:
+        if gameRun%1 == 0:
             print("Run game:"+str(gameRun))
         while True:
             # fresh env
@@ -31,13 +31,13 @@ def run_maze():
 
             # RL take action and get next observation and reward
             observation_, reward, done, info = env.step(action)
-            if done:
-                reward = -1.0
-            #print(observation_, reward, done,action,info)
+            # if done:
+            #     reward = -1.0
+            #print(reward, done,action,info)
 
             RL.store_transition(observation, action, reward, observation_)
 
-            if (step > 1000) and (step % 5 == 0):
+            if (step > 400) and (step % 5 == 0):
                 RL.learn()
 
             # swap observation
@@ -54,19 +54,18 @@ def run_maze():
 
 
 if __name__ == "__main__":
-    # maze game
-    env = Maze()
 
-    env = gym.make('CartPole-v0')
+    env = gym.make('LunarLander-v2')
     env.reset()
 
 
-    RL = DeepQNetwork(2, 4,
+    RL = DeepQNetwork(4, 8,
                       learning_rate=0.03,
                       reward_decay=0.9,
                       e_greedy=0.8,
                       replace_target_iter=500,
                       memory_size=2000,
+                      e_greedy_increment=0.01
                       # output_graph=True
                       )
     run_maze()
