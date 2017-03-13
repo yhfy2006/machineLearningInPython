@@ -14,13 +14,12 @@ import ppaquette_gym_doom
 import cv2
 import matplotlib.pyplot as plt
 
+ROW = 120
+COL = 160
 
 def run_maze():
     step = 0
     gameRun = 0
-
-    ROW = 120
-    COL = 160
 
     for episode in range(50000):
         # initial observation

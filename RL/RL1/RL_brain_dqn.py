@@ -13,13 +13,15 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras.models import Sequential
-from keras.layers import Input, Dense, Convolution2D, MaxPooling2D, UpSampling2D, Reshape, Flatten
+from keras.layers import Input, Dense, Convolution2D, MaxPooling2D, UpSampling2D, Reshape, Flatten,ZeroPadding2D
 from keras.models import Model
 from keras import backend as K
 
 np.random.seed(1)
 tf.set_random_seed(1)
 
+ROW = 120
+COL = 160
 
 # Deep Q Network off-policy
 class DeepQNetwork:
@@ -71,9 +73,29 @@ class DeepQNetwork:
         return K.variable(value, name=name)
 
     def _build_keras_net(self):
-        input = Input(shape=(self.n_features,))
-        x = Dense(256,activation='relu',init='normal')(input)
-        x = Dense(256,activation='relu',init='normal')(x)
+        featureShaped =self.n_features.reshape(ROW,COL,3)
+        input = Input(shape=featureShaped.shape)
+        x = ZeroPadding2D(1,1)(input)
+        x = Convolution2D(64, 3, 3, activation='relu')(x)
+        x = ZeroPadding2D(1,1)(x)
+        x = Convolution2D(64, 3, 3, activation='relu')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+        x = ZeroPadding2D(1,1)(x)
+        x = Convolution2D(128, 3, 3, activation='relu')(x)
+        x = ZeroPadding2D(1,1)(x)
+        x = Convolution2D(128, 3, 3, activation='relu')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+        x = ZeroPadding2D(1,1)(x)
+        x = Convolution2D(256, 3, 3, activation='relu')(x)
+        x = ZeroPadding2D(1,1)(x)
+        x = Convolution2D(256, 3, 3, activation='relu')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+
+        x = Flatten()(x)
+        x = Dense(128,activation='relu',init='normal')(x)
+
         output = Dense(self.n_actions,init='normal')(x)
         md = Model(input = input, output=output)
         md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
