@@ -13,15 +13,14 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras.models import Sequential
-from keras.layers import Input, Dense, Convolution2D, MaxPooling2D, UpSampling2D, Reshape, Flatten,ZeroPadding2D
+from keras.layers import Input, Dense, Convolution2D, MaxPooling2D,Activation, Flatten,ZeroPadding2D
 from keras.models import Model
+from keras.initializers import normal
 from keras import backend as K
+from keras.optimizers import Adam
 
 np.random.seed(1)
 tf.set_random_seed(1)
-
-ROW = 120
-COL = 160
 
 # Deep Q Network off-policy
 class DeepQNetwork:
@@ -37,6 +36,8 @@ class DeepQNetwork:
             batch_size=32,
             e_greedy_increment=None,
             output_graph=False,
+            img_row = 120,
+            img_col = 160
     ):
         self.n_actions = n_actions
         self.n_features = n_features
@@ -48,6 +49,8 @@ class DeepQNetwork:
         self.batch_size = batch_size
         self.epsilon_increment = e_greedy_increment
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
+        self.img_row = img_row
+        self.img_col = img_col
 
         # total learning step
         self.learn_step_counter = 0
@@ -73,33 +76,57 @@ class DeepQNetwork:
         return K.variable(value, name=name)
 
     def _build_keras_net(self):
-        featureShaped =self.n_features.reshape(ROW,COL,3)
-        input = Input(shape=featureShaped.shape)
-        x = ZeroPadding2D(1,1)(input)
-        x = Convolution2D(64, 3, 3, activation='relu')(x)
-        x = ZeroPadding2D(1,1)(x)
-        x = Convolution2D(64, 3, 3, activation='relu')(x)
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        #featureShaped =self.n_features.reshape(self.img_row,self.img_col,3)
+        # input = Input(shape=featureShaped.shape)
+        # x = ZeroPadding2D(1,1)(input)
+        # x = Convolution2D(64, 3, 3, activation='relu')(x)
+        # x = ZeroPadding2D(1,1)(x)
+        # x = Convolution2D(64, 3, 3, activation='relu')(x)
+        # x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        #
+        # x = ZeroPadding2D(1,1)(x)
+        # x = Convolution2D(128, 3, 3, activation='relu')(x)
+        # x = ZeroPadding2D(1,1)(x)
+        # x = Convolution2D(128, 3, 3, activation='relu')(x)
+        # x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        #
+        # x = ZeroPadding2D(1,1)(x)
+        # x = Convolution2D(256, 3, 3, activation='relu')(x)
+        # x = ZeroPadding2D(1,1)(x)
+        # x = Convolution2D(256, 3, 3, activation='relu')(x)
+        # x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        #
+        # x = Flatten()(x)
+        # x = Dense(128,activation='relu',init='normal')(x)
+        #
+        # output = Dense(self.n_actions,init='normal')(x)
+        # md = Model(input = input, output=output)
+        # md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
+        #
 
-        x = ZeroPadding2D(1,1)(x)
-        x = Convolution2D(128, 3, 3, activation='relu')(x)
-        x = ZeroPadding2D(1,1)(x)
-        x = Convolution2D(128, 3, 3, activation='relu')(x)
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
-        x = ZeroPadding2D(1,1)(x)
-        x = Convolution2D(256, 3, 3, activation='relu')(x)
-        x = ZeroPadding2D(1,1)(x)
-        x = Convolution2D(256, 3, 3, activation='relu')(x)
-        x = MaxPooling2D((2, 2), strides=(2, 2))(x)
+        model = Sequential()
+        model.add(
+            Convolution2D(32, 6, 6, subsample=(4, 4), init=lambda shape, name: normal(shape, scale=0.01, name=name),
+                          border_mode='same', input_shape=(self.img_row, self.img_col,3)))
+        model.add(Activation('relu'))
+        model.add(
+            Convolution2D(64, 4, 4, subsample=(5, 5), init=lambda shape, name: normal(shape, scale=0.01, name=name),
+                          border_mode='same'))
+        model.add(Activation('relu'))
+        model.add(
+            Convolution2D(64, 3, 3, subsample=(1, 1), init=lambda shape, name: normal(shape, scale=0.01, name=name),
+                          border_mode='same'))
+        model.add(Activation('relu'))
+        model.add(Flatten())
+        model.add(Dense(512, init=lambda shape, name: normal(shape, scale=0.01, name=name)))
+        model.add(Activation('relu'))
+        model.add(Dense(self.n_actions, init=lambda shape, name: normal(shape, scale=0.01, name=name)))
 
-        x = Flatten()(x)
-        x = Dense(128,activation='relu',init='normal')(x)
-
-        output = Dense(self.n_actions,init='normal')(x)
-        md = Model(input = input, output=output)
-        md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
-        return md
+        adam = Adam(lr=1e-6)
+        model.compile(loss='mse', optimizer=adam)
+        print("We finish building the model")
+        return model
 
     def _build_net(self):
         # ------------------ build evaluate_net ------------------

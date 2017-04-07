@@ -14,8 +14,8 @@ import ppaquette_gym_doom
 import cv2
 import matplotlib.pyplot as plt
 
-ROW = 120
-COL = 160
+ROW = 60
+COL = 80
 
 def run_maze():
     step = 0
@@ -45,8 +45,6 @@ def run_maze():
             observation_f_resized = cv2.resize(observation_, (COL,ROW )) / 255.0
 
             observation_f_flatten = observation_f_resized.flatten()
-
-            #print(observation_, reward, done,action,info)
 
             RL.store_transition(observation_flatten, action, reward, observation_f_flatten)
 
@@ -88,16 +86,15 @@ if __name__ == "__main__":
                   (0,1,0),
                   (0,0,1)]
 
-    RL = DeepQNetwork(6, 120*160*3,
+    RL = DeepQNetwork(6, ROW*COL*3,
                       learning_rate=0.03,
                       reward_decay=0.7,
                       e_greedy=0.9,
                       replace_target_iter=200,
                       memory_size=200,
-                      e_greedy_increment = 0.001
-                      # output_graph=True
+                      e_greedy_increment = 0.001,
+                      img_row= ROW,
+                      img_col= COL
                       )
     run_maze()
-    #env.after(100, run_maze)
-    #env.mainloop()
     RL.plot_cost()
