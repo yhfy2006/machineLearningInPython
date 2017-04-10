@@ -1,6 +1,8 @@
 __author__ = 'chhe'
 import csv
 import numpy as np
+import keras.utils as util
+from music_unit import Music_unit
 
 class CSV_Manager(object):
 
@@ -19,19 +21,21 @@ class CSV_Manager(object):
                 note = int(row[4])  # 0 to 100
                 velocity = int(row[5])
                 time = int(row[1])
-                raw_data_tuple = (time,event,note,velocity)
-                raw_data_list.append(raw_data_tuple)
-                # raw data format (time,event,note,velocity)
+                music_unit = Music_unit(time = time,event_str=event, note = note, velocity= velocity)
+                raw_data_list.append(music_unit)
 
-        sorted_raw = sorted(raw_data_list, key=lambda tup: tup[0])
+        sorted_raw = sorted(raw_data_list, key=lambda tup: music_unit.time)
 
         init_time = 0
 
-        for data in sorted_raw:
-            self._translate_to_vec(data[0]-init_time,data[1],data[2],data[3])
-            init_time = data[0]
+        for music_unit in sorted_raw:
+            vec = self._translate_to_vec(music_unit.time-init_time,music_unit.event,music_unit.note,music_unit.velocity)
+            init_time = music_unit.time
             if init_time is not 0:
+                print(music_unit.time-init_time,music_unit.event,music_unit.note,music_unit.velocity)
+                self.vec_to_note(vec)
                 break
+
 
         f.close()
 
@@ -40,14 +44,50 @@ class CSV_Manager(object):
         # 0-13  time to last note
         # 14-15 event
         # 16-116 note
-        # 116-243 vel
+        # 117-244 vel
         time_bin = "{0:b}".format(rel_time)
         time_bin_reverse = time_bin[::-1]
         for index in range(len(time_bin_reverse)):
             value = int(time_bin_reverse[index])
             vec[13-index] = value
-        print(rel_time,time_bin,time_bin_reverse,vec)
-        
+
+        # event
+        event_digits = util.to_categorical(event,num_classes=Music_unit.music_events_len())
+        vec = np.append(vec,event_digits)
+
+        #notes
+        notes_digits = util.to_categorical(note,num_classes=Music_unit.music_note_len())
+        vec = np.append(vec,notes_digits)
+
+        #vel
+        vel_digits = util.to_categorical(vel,num_classes=Music_unit.music_vel_len())
+        vec = np.append(vec, vel_digits)
+        return vec
+
+    def vec_to_note(self,vec):
+        # 0-13  time to last note
+        pos = 14
+        time_bin = vec[0:pos]
+        time_str = ''
+        for i in time_bin:
+            time_str += str(int(i))
+        relative_time_int = int(time_str,2)
+
+        event_int = np.argmax(vec[pos:pos+Music_unit.music_events_len()])
+        pos += Music_unit.music_events_len()
+
+
+        note_int = np.argmax(vec[pos:pos+Music_unit.music_note_len()])
+        pos += Music_unit.music_note_len()
+
+        vel_int = np.argmax(vec[pos:pos+Music_unit.music_vel_len()])
+
+        return relative_time_int,event_int,note_int,vel_int
+
+
+
+
+
 
 
 
@@ -56,6 +96,8 @@ class CSV_Manager(object):
 def main():
     cm = CSV_Manager()
     cm.process_file()
+
+    print(util.to_categorical(1,num_classes=2))
 
 
 
