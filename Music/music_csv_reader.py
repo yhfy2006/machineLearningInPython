@@ -6,6 +6,8 @@ from music_unit import Music_unit
 
 class CSV_Manager(object):
 
+    music_sequence = []
+
     def __init__(self,filename = 'alb1.csv'):
         self.csv_file = filename
         pass
@@ -25,18 +27,15 @@ class CSV_Manager(object):
                 raw_data_list.append(music_unit)
 
         sorted_raw = sorted(raw_data_list, key=lambda tup: music_unit.time)
-
         init_time = 0
 
         for music_unit in sorted_raw:
             vec = self._translate_to_vec(music_unit.time-init_time,music_unit.event,music_unit.note,music_unit.velocity)
             init_time = music_unit.time
-            if init_time is not 0:
-                print(music_unit.time-init_time,music_unit.event,music_unit.note,music_unit.velocity)
-                self.vec_to_note(vec)
-                break
-
-
+            self.music_sequence.append(vec)
+            # if init_time is not 0:
+            #     self.vec_to_note(vec)
+            #     break
         f.close()
 
     def _translate_to_vec(self,rel_time,event,note,vel):
@@ -83,6 +82,15 @@ class CSV_Manager(object):
         vel_int = np.argmax(vec[pos:pos+Music_unit.music_vel_len()])
 
         return relative_time_int,event_int,note_int,vel_int
+
+
+    def form_csv(self,music_vec_sequence):
+        real_time = 0
+        preSet = '0,0,Header,1,8,480\n2,0,Start_track\n2,0,Title_t,\"Piano good\"\n'
+        for music_vec in music_vec_sequence:
+            relative_time_int, event_int, note_int, vel_int = self.vec_to_note(music_vec)
+            music_unit_str = '1,'+str(real_time)+','+Music_unit.music_events_inv[event_int]+',0'+ str(note_int)+str(vel_int)
+            real_time += relative_time_int
 
 
 

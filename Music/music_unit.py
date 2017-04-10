@@ -4,6 +4,7 @@ class Music_unit:
 
     music_events = {'Control_c':0,
                     'Note_on_c':1}
+    music_events_inv = dict((v, k) for k, v in music_events.iteritems())
 
     @staticmethod
     def music_events_len():
@@ -20,6 +21,7 @@ class Music_unit:
     def __init__(self,time,event_str,note,velocity):
         self.time = time
         self.event = self.event_to_digit(event_str)
+        self.event_name = event_str
         self.note = note
         self.velocity = velocity
 
