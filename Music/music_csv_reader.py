@@ -7,6 +7,7 @@ from music_unit import Music_unit
 class CSV_Manager(object):
 
     music_sequence = []
+    vec_length = 0
 
     def __init__(self,filename = 'alb1.csv'):
         self.csv_file = filename
@@ -52,7 +53,6 @@ class CSV_Manager(object):
         time_bin = "{0:b}".format(rel_time)
         time_bin_reverse = time_bin[::-1]
         for index in range(len(time_bin_reverse)):
-            print(rel_time,time_bin,time_bin_reverse,index)
             value = int(time_bin_reverse[index])
             vec[13-index] = value
 
@@ -67,6 +67,9 @@ class CSV_Manager(object):
         #vel
         vel_digits = util.to_categorical(vel,num_classes=Music_unit.music_vel_len())
         vec = np.append(vec, vel_digits)
+
+        self.vec_length = len(vec)
+
         return vec
 
     def vec_to_note(self,vec):
@@ -115,6 +118,7 @@ class CSV_Manager(object):
 def main():
     cm = CSV_Manager()
     cm.process_file()
+    print(cm.music_sequence[0])
     with open("alb1_test.csv", "w") as csv_file:
         result = cm.form_csv(cm.music_sequence)
         csv_file.write(result)
