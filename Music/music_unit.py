@@ -4,7 +4,7 @@ class Music_unit:
 
     music_events = {'Control_c':0,
                     'Note_on_c':1}
-    music_events_inv = dict((v, k) for k, v in music_events.iteritems())
+    music_events_inv = dict((v, k) for k, v in music_events.items())
 
     @staticmethod
     def music_events_len():
@@ -12,7 +12,7 @@ class Music_unit:
 
     @staticmethod
     def music_note_len():
-        return 100
+        return 127
 
     @staticmethod
     def music_vel_len():

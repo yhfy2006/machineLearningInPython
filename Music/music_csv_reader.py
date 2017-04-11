@@ -30,12 +30,16 @@ class CSV_Manager(object):
         init_time = 0
 
         for music_unit in sorted_raw:
-            vec = self._translate_to_vec(music_unit.time-init_time,music_unit.event,music_unit.note,music_unit.velocity)
-            init_time = music_unit.time
-            self.music_sequence.append(vec)
-            # if init_time is not 0:
-            #     self.vec_to_note(vec)
-            #     break
+            rel_time = music_unit.time-init_time
+            if rel_time < 0:
+                break
+            else:
+                vec = self._translate_to_vec(rel_time,music_unit.event,music_unit.note,music_unit.velocity)
+                init_time = music_unit.time
+                self.music_sequence.append(vec)
+                # if init_time is not 0:
+                #     self.vec_to_note(vec)
+                #     break
         f.close()
 
     def _translate_to_vec(self,rel_time,event,note,vel):
@@ -44,9 +48,11 @@ class CSV_Manager(object):
         # 14-15 event
         # 16-116 note
         # 117-244 vel
+
         time_bin = "{0:b}".format(rel_time)
         time_bin_reverse = time_bin[::-1]
         for index in range(len(time_bin_reverse)):
+            print(rel_time,time_bin,time_bin_reverse,index)
             value = int(time_bin_reverse[index])
             vec[13-index] = value
 
@@ -86,11 +92,16 @@ class CSV_Manager(object):
 
     def form_csv(self,music_vec_sequence):
         real_time = 0
-        preSet = '0,0,Header,1,8,480\n2,0,Start_track\n2,0,Title_t,\"Piano good\"\n'
+        preSet = '0,0,Header,1,8,480\n1,0,Start_track\n1,0,Title_t,\"Piano good\"\n'
         for music_vec in music_vec_sequence:
             relative_time_int, event_int, note_int, vel_int = self.vec_to_note(music_vec)
-            music_unit_str = '1,'+str(real_time)+','+Music_unit.music_events_inv[event_int]+',0'+ str(note_int)+str(vel_int)
             real_time += relative_time_int
+            music_unit_str = '1,'+str(real_time)+','+Music_unit.music_events_inv[event_int]+',0,'+ str(note_int)+","+str(vel_int)
+            preSet += music_unit_str+"\n"
+        preSet += '1,'+ str(real_time)+',End_track\n'
+        preSet += '0, 0, End_of_file'
+        return preSet
+
 
 
 
@@ -104,9 +115,15 @@ class CSV_Manager(object):
 def main():
     cm = CSV_Manager()
     cm.process_file()
+    with open("alb1_test.csv", "w") as csv_file:
+        result = cm.form_csv(cm.music_sequence)
+        csv_file.write(result)
 
-    print(util.to_categorical(1,num_classes=2))
 
+    #print(util.to_categorical(1,num_classes=2))
+    # terminal commands:
+    # csvmidi alb1_test.csv alb1_test.mid
+    # timidity alb1_test.mid
 
 
 if __name__ == '__main__':
