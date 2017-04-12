@@ -9,7 +9,7 @@ class CSV_Manager(object):
     music_sequence = []
     vec_length = 0
 
-    def __init__(self,filename = 'alb1.csv'):
+    def __init__(self,filename = 'alb2.csv'):
         self.csv_file = filename
         pass
 
@@ -18,7 +18,7 @@ class CSV_Manager(object):
         csv_f = csv.reader(f)
         raw_data_list = []
         for row in csv_f:
-            row = [ i.strip() for i in row]
+            row = [ i.encode('utf-8').strip() for i in row]
             event = row[2] #Note_on_c  #Control_c
             if event == 'Note_on_c' or event == 'Control_c':
                 note = int(row[4])  # 0 to 100
