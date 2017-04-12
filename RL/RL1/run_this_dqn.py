@@ -14,8 +14,8 @@ import ppaquette_gym_doom
 import cv2
 import matplotlib.pyplot as plt
 
-ROW = 120
-COL = 160
+ROW = 200
+COL = 320
 
 def run_maze():
     step = 0
@@ -50,7 +50,7 @@ def run_maze():
 
             RL.store_transition(observation_flatten, action, reward, observation_f_flatten)
 
-            if (step > 1000) and (step % 5 == 0):
+            if (step > 500) and (step % 10 == 0):
                 RL.learn()
 
             # swap observation
@@ -88,12 +88,12 @@ if __name__ == "__main__":
                   (0,1,0),
                   (0,0,1)]
 
-    RL = DeepQNetwork(6, 120*160*3,
+    RL = DeepQNetwork(6, ROW*COL*3,
                       learning_rate=0.03,
                       reward_decay=0.7,
                       e_greedy=0.9,
                       replace_target_iter=200,
-                      memory_size=200,
+                      memory_size=2000,
                       e_greedy_increment = 0.001
                       # output_graph=True
                       )

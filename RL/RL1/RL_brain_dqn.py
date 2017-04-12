@@ -20,8 +20,8 @@ from keras import backend as K
 np.random.seed(1)
 tf.set_random_seed(1)
 
-ROW = 120
-COL = 160
+ROW = 200
+COL = 320
 
 # Deep Q Network off-policy
 class DeepQNetwork:
@@ -73,30 +73,24 @@ class DeepQNetwork:
         return K.variable(value, name=name)
 
     def _build_keras_net(self):
-        featureShaped =self.n_features.reshape(ROW,COL,3)
-        input = Input(shape=featureShaped.shape)
-        x = ZeroPadding2D(1,1)(input)
-        x = Convolution2D(64, 3, 3, activation='relu')(x)
-        x = ZeroPadding2D(1,1)(x)
+        input = Input(shape=(ROW,COL,3))
+        #x = ZeroPadding2D(1,1)(input)
+        x = Convolution2D(64, 3, 3, activation='relu')(input)
         x = Convolution2D(64, 3, 3, activation='relu')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
-        x = ZeroPadding2D(1,1)(x)
         x = Convolution2D(128, 3, 3, activation='relu')(x)
-        x = ZeroPadding2D(1,1)(x)
         x = Convolution2D(128, 3, 3, activation='relu')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
-        x = ZeroPadding2D(1,1)(x)
         x = Convolution2D(256, 3, 3, activation='relu')(x)
-        x = ZeroPadding2D(1,1)(x)
         x = Convolution2D(256, 3, 3, activation='relu')(x)
         x = MaxPooling2D((2, 2), strides=(2, 2))(x)
 
         x = Flatten()(x)
         x = Dense(128,activation='relu',init='normal')(x)
 
-        output = Dense(self.n_actions,init='normal')(x)
+        output = Dense(self.n_actions,init='normal',activation='sigmoid')(x)
         md = Model(input = input, output=output)
         md.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
         return md
@@ -120,9 +114,10 @@ class DeepQNetwork:
     def choose_action(self, observation):
         # to have batch dimension when feed into tf placeholder
         observation = observation[np.newaxis, :]
+        reshaped_obs = observation.reshape(-1,ROW, COL, 3)
         if np.random.uniform() < self.epsilon:
             # forward feed the observation and get q value for every actions
-            actions_value =  self.evaluate_net.predict(observation)
+            actions_value =  self.evaluate_net.predict(reshaped_obs)
             action = np.argmax(actions_value)
         else:
             action = np.random.randint(0, self.n_actions)
@@ -133,6 +128,7 @@ class DeepQNetwork:
         self.target_net.load_weights("tempWeights.h5")
 
     def learn(self):
+
         # check to replace target parameters
         if self.learn_step_counter % self.replace_target_iter == 0:
             self._replace_target_params()
@@ -146,15 +142,18 @@ class DeepQNetwork:
         self.s = batch_memory.iloc[:, :self.n_features].values
         self.s_ = batch_memory.iloc[:, -self.n_features:].values
 
-        q_next = self.target_net.predict(self.s_)
-        q_eval = self.evaluate_net.predict(self.s)
+        reshapedS = self.s.reshape(-1,ROW, COL, 3)
+        reshapedS_ = self.s_.reshape(-1,ROW, COL, 3)
+
+        q_next = self.target_net.predict(reshapedS_)
+        q_eval = self.evaluate_net.predict(reshapedS)
 
         q_target = q_eval.copy()
         q_target[np.arange(self.batch_size, dtype=np.int32), batch_memory.iloc[:, self.n_features].astype(int)] = \
             batch_memory.iloc[:, self.n_features+1] + self.gamma * np.max(q_next, axis=1)
 
         # train eval network
-        history = self.evaluate_net.fit(self.s,q_target,
+        history = self.evaluate_net.fit(reshapedS,q_target,
                 nb_epoch=1,
                 batch_size=50,
                 shuffle=False,
